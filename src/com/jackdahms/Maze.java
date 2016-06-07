@@ -1,7 +1,8 @@
 package com.jackdahms;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 
 public class Maze {
 	
@@ -9,7 +10,8 @@ public class Maze {
 		
 	int[][] map; 
 	
-	BufferedImage image;
+	WritableImage image;
+	PixelWriter writer;
 	
 	/**
 	 * Create a new maze.
@@ -19,16 +21,26 @@ public class Maze {
 	public Maze(int width, int height) {
 		this.width = width;
 		this.height = height;
+		image = new WritableImage(width, height);
 		
 		map = new int[height][width]; //[rows][columns]
 	}
 		
 	public void mapToImage() {
-		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		image = new WritableImage(width, height);
+		writer = image.getPixelWriter();
 		
-		Graphics2D g = image.createGraphics();
+		for (int i = 0; i < width / 2; i++) {
+			for (int k = 0; k < height / 2; k++) {
+				writer.setColor(i, k, Color.BLACK);
+			}
+		}
 		
-		g.dispose();
+		for (int i = width / 2; i < width; i++) {
+			for (int k = height / 2; k < height; k++) {
+				writer.setColor(i, k, Color.BLACK);
+			}
+		}
 	}
 
 }
