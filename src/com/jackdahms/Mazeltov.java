@@ -1,5 +1,10 @@
 package com.jackdahms;
 
+import java.util.ArrayList;
+import java.util.Stack;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
@@ -21,6 +26,7 @@ public class Mazeltov extends Application {
 	
 	static int SCENE_WIDTH = 1000;
 	static int SCENE_HEIGHT = 600;
+	static int CONTROL_PANEL_WIDTH = 200;
 	
 	static int width = 40;
 	static int height = 30;
@@ -31,15 +37,15 @@ public class Mazeltov extends Application {
 	static Canvas canvas;
 	GraphicsContext g;
 	
+	static ArrayList<Generatable> rulesets = new ArrayList<Generatable>();
+	
 	/**
 	 * TODO
-	 * gui code to html
-	 * user input needs to change values
 	 * generations dropdown
 	 * solutions dropdown
-	 * generate button
-	 * solve button
 	 * potentially get rid of ability to move start and finish
+	 * vbox instead of gridpane?
+	 * spinners not friendly with user-typed input
 	 */
 	
 	private void repaint(long currentNanoTime) {
@@ -48,8 +54,87 @@ public class Mazeltov extends Application {
 	}
 
 	public static void main(String[] args) {
-		maze = new Maze(width, height, SCENE_WIDTH - 200, SCENE_HEIGHT);
+		maze = new Maze(width, height, SCENE_WIDTH - CONTROL_PANEL_WIDTH, SCENE_HEIGHT);
 		setPropertiesAndDraw();
+		
+		rulesets.add(() -> {			
+			class Cell {
+				int row, col;
+				
+				Cell(int row, int col) {
+					this.row = row; 
+					this.col = col;
+				}
+				
+				void setVisited(boolean visited){
+					if (visited) {
+						maze.cells[row][col] = 1;
+					} else {
+						maze.cells[row][col] = 0;
+					}
+				}
+				
+				boolean getVisited() {
+					return maze.cells[row][col] == 1;
+				}
+								
+			}
+
+			Cell[][] cells = new Cell[maze.height][maze.width];
+						
+			for (int i = 0; i < maze.height; i++) {
+				for (int k = 0; k < maze.width; k++) {
+					cells[i][k] = new Cell(i, k);
+				}
+			}
+		
+			BiFunction<Integer, Integer, ArrayList<Cell>> getNeighbors = (row, col) -> {
+				ArrayList<Cell> neighbors = new ArrayList<Cell>();
+				try {neighbors.add(cells[row - 1][col]);} catch (Exception e) {/*neighbor out of bounds*/}
+				try {neighbors.add(cells[row + 1][col]);} catch (Exception e) {/*neighbor out of bounds*/}
+				try {neighbors.add(cells[row][col - 1]);} catch (Exception e) {/*neighbor out of bounds*/}
+				try {neighbors.add(cells[row][col + 1]);} catch (Exception e) {/*neighbor out of bounds*/}
+				return neighbors;
+			};
+			
+			Cell current = cells[maze.starty][maze.startx];
+			current.setVisited(true);
+			
+			//TODO backtrack with cells, not stack
+			Stack<Cell> stack = new Stack<Cell>();
+			
+			do {
+				ArrayList<Cell> unvisitedNeighbors = new ArrayList<Cell>();
+				for (Cell c : getNeighbors.apply(current.row, current.col)){
+					if (!c.getVisited()) {
+						unvisitedNeighbors.add(c);
+					}
+				}
+				
+				if (unvisitedNeighbors.size() == 0) { //if all neighbors visited
+					current = stack.pop();
+				} else { //if any unvisited neighbors
+					Cell chosen = unvisitedNeighbors.get((int) (Math.random() * unvisitedNeighbors.size()));
+					
+					if (chosen.col > current.col) { //neighbor on the right
+						maze.verticalWalls[current.row][current.col] = 0;
+					} else if (chosen.col < current.col) { //neighbor on the left
+						maze.verticalWalls[chosen.row][chosen.col] = 0; 
+					} else if (chosen.row < current.row) { //neighbor on top
+						maze.horizontalWalls[chosen.row][chosen.col] = 0;
+					} else if (chosen.row > current.row) { //neighbor on bottom
+						maze.horizontalWalls[current.row][current.col] = 0;
+					}
+					
+					stack.push(current);
+					current = chosen;
+					current.setVisited(true);
+				}
+				
+			} while (!stack.empty());
+			
+		});
+		
 		launch(args);
 	}
 	
@@ -66,7 +151,7 @@ public class Mazeltov extends Application {
 	public void start(Stage stage) {
 		GridPane pane = new GridPane();
 		pane.setAlignment(Pos.TOP_RIGHT);
-		canvas = new Canvas(SCENE_WIDTH - 200, SCENE_HEIGHT);
+		canvas = new Canvas(SCENE_WIDTH - CONTROL_PANEL_WIDTH, SCENE_HEIGHT);
 		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> maze.pressed(e.getX(), e.getY()));
 		canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> maze.dragged(e.getX(), e.getY()));
 		canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> maze.released(e.getX(), e.getY()));
@@ -82,9 +167,9 @@ public class Mazeltov extends Application {
 		}.start();
 		
 		GridPane controlGrid = new GridPane();
-		controlGrid.setId("grid-pane");
+		controlGrid.setId("control-panel");
 		pane.add(controlGrid, 1, 0);
-		
+				
 		Label widthLabel = new Label("WIDTH");
 		controlGrid.add(widthLabel, 0, 0);
 		
@@ -109,14 +194,24 @@ public class Mazeltov extends Application {
 		wallThicknessSpinner.valueProperty().addListener(observable -> wallThickness = wallThicknessSpinner.getValue());
 		controlGrid.add(wallThicknessSpinner, 1, 2);
 		
-		Button generateButton = new Button("GENERATE");
-		generateButton.setMinWidth(95);
-		generateButton.setOnAction(press -> setPropertiesAndDraw());
-		controlGrid.add(generateButton, 0, 3);
+		Label generatorLabel = new Label("GENERATOR");
+		controlGrid.add(generatorLabel, 0, 3);
 		
+
+		Button generateButton = new Button("GENERATE");
+		generateButton.setMinWidth(190);
+		generateButton.setOnAction(press -> {
+			setPropertiesAndDraw();
+			maze.generateMaze(rulesets.get(0));
+		});
+		controlGrid.add(generateButton, 0, 4, 2, 1);
+		
+		Label solverLabel = new Label("SOLVER");
+		controlGrid.add(solverLabel, 0, 5);
+				
 		Button solveButton = new Button("SOLVE");
-		solveButton.setMinWidth(90);
-		controlGrid.add(solveButton, 1, 3);
+		solveButton.setMinWidth(190);
+		controlGrid.add(solveButton, 0, 6, 2, 1);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
 		controlGrid.requestFocus(); //must be done after scene is constructed
@@ -126,23 +221,20 @@ public class Mazeltov extends Application {
 			System.err.println("Could not load stylesheet...");
 		}
 		
-		InvalidationListener sizeListener = new InvalidationListener() {
-			public void invalidated(Observable arg0) {
-				pane.getChildren().remove(canvas);
-				canvas = new Canvas(scene.getWidth() - 200, scene.getHeight());
-				
-				canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> maze.pressed(e.getX(), e.getY()));
-				canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> maze.dragged(e.getX(), e.getY()));
-				canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> maze.released(e.getX(), e.getY()));
-				
-				g = canvas.getGraphicsContext2D();
-				pane.add(canvas, 0, 0);
-				try {
-					maze.resize((int)canvas.getWidth(), (int)canvas.getHeight());
-				} catch (Exception e) {System.err.println("error in redrawing maze");}
-				repaint(0);
-				
-			}			
+		InvalidationListener sizeListener = observable -> {
+			pane.getChildren().remove(canvas);
+			canvas = new Canvas(scene.getWidth() - CONTROL_PANEL_WIDTH, scene.getHeight());
+			
+			canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> maze.pressed(e.getX(), e.getY()));
+			canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> maze.dragged(e.getX(), e.getY()));
+			canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> maze.released(e.getX(), e.getY()));
+			
+			g = canvas.getGraphicsContext2D();
+			pane.add(canvas, 0, 0);
+			try {
+				maze.resize((int)canvas.getWidth(), (int)canvas.getHeight());
+			} catch (Exception e) {System.err.println("error in redrawing maze");}
+			repaint(0);
 		};
 		
 		scene.widthProperty().addListener(sizeListener);
