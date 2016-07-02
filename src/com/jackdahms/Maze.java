@@ -9,9 +9,14 @@ public class Maze {
 	int width, height;
 	int imageWidth, imageHeight;
 	int wallThickness;
-	//coordinates of the enter and exit points
+	//coordinates of the start, finish, and cursor
 	int startx, starty;
 	int finishx, finishy;
+	int cursorx, cursory;
+	
+	//whether the start or finish are pressed to be moved
+	boolean startPressed;
+	boolean finishPressed;
 	
 	Color startColor;
 	Color finishColor;
@@ -19,6 +24,8 @@ public class Maze {
 	int[][] horizontalWalls;
 	int[][] verticalWalls;
 	int[][] cells;
+	
+	double cellWidth, cellHeight;
 	
 	WritableImage image;
 	PixelWriter writer;
@@ -35,6 +42,7 @@ public class Maze {
 		this.height = height;
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
+		wallThickness = 1;
 		startx = 0;
 		starty = 0;
 		finishx = width - 1;
@@ -45,45 +53,24 @@ public class Maze {
 		
 		image = new WritableImage(width, height);
 		
-		//both initialized to zero
-		cells = new int[height][width]; //[rows][columns]
-		horizontalWalls = new int[height - 1][width]; //subtract one to account for border
-		verticalWalls = new int[height][width - 1];
-		
-		//so we set everything to one
-		for (int i = 0; i < height - 1; i++) {
-			for (int k = 0; k < width - 1; k++) {
-				horizontalWalls[i][k] = 1;
-				verticalWalls[i][k] = 1;
-			}
-		}
-		for (int i = 0; i < height - 1; i++) {
-			horizontalWalls[i][width - 1] = 1;
-		}
-		for (int k = 0; k < width - 1; k++) {
-			verticalWalls[height - 1][k] = 1;
-		}
-		
-		//test zig zag
-		verticalWalls[0][0] = 0;
-		horizontalWalls[0][1] = 0;
-		horizontalWalls[1][1] = 0;
-		verticalWalls[2][1] = 0;
+		generateMaze();
 	}
 		
 	public void mapToImage() {
 		image = new WritableImage(imageWidth, imageHeight);
 		writer = image.getPixelWriter();
 		
-		double cellWidth = (double)imageWidth / (double)width;
-		double cellHeight = (double)imageHeight / (double)height;
+		cellWidth = (double)imageWidth / (double)width;
+		cellHeight = (double)imageHeight / (double)height;
 		
+		//draw start cell
 		for (int y = (int) (starty * cellHeight); y < starty * cellHeight + cellHeight; y++) {
 			for (int x = (int) (startx * cellWidth); x < startx * cellWidth + cellWidth; x++) {
 				writer.setColor(x, y, startColor);
 			}
 		}
 		
+		//draw finish cell
 		for (int y = (int) (finishy * cellHeight); y < finishy * cellHeight + cellHeight; y++) {
 			for (int x = (int) (finishx * cellWidth); x < finishx * cellWidth + cellWidth; x++) {
 				writer.setColor(x, y, finishColor);
@@ -160,6 +147,94 @@ public class Maze {
 		this.imageHeight = imageHeight;
 		
 		mapToImage();
+	}
+	
+	/**
+	 * Given an (x, y) coordinate pair, this will convert the position in pixels to coordinates in the mazes grid and store them in (cursorx, cursory)
+	 * @param x the x position in pixels
+	 * @param y the y position in pixels
+	 */
+	public void cursorPositionToCoords(double x, double y) {
+		//convert points to coords
+		cursorx = (int) (x / cellWidth);
+		cursory = (int) (y / cellHeight);
+		//bounds checking
+		if (cursorx >= width) cursorx = width - 1;
+		else if (cursorx < 0) cursorx = 0;
+		if (cursory >= height) cursory = height - 1;
+		else if (cursory < 0) cursory = 0;
+	}
+	
+	public void pressed(double x, double y) {
+		cursorPositionToCoords(x, y);
+		if (cursorx == startx && cursory == starty) {
+			startPressed = true;
+		} else if (cursorx == finishx && cursory == finishy) {
+			finishPressed = true;
+		}
+	}
+	
+	public void dragged(double x, double y) {
+		cursorPositionToCoords(x, y);
+		if (startPressed) {
+			if (cursorx != finishx || cursory != finishy) {
+				startx = cursorx;
+				starty = cursory;
+				mapToImage();
+			}
+		} else if (finishPressed) {
+			if (cursorx != startx || cursory != starty) {
+				finishx = cursorx;
+				finishy = cursory;
+				mapToImage();
+			}
+		}
+	}
+	
+	public void released(double x, double y) {
+		startPressed = false;
+		finishPressed = false;
+	}
+	
+	public void setWidth(int width) {
+		this.width = width;
+		finishx = width - 1;
+		
+		generateMaze();
+	}
+	
+	public void setHeight(int height) {
+		this.height = height;
+		finishy = height - 1;
+		
+		generateMaze();
+	}
+	
+	public void generateMaze() {
+		//both initialized to zero
+		cells = new int[height][width]; //[rows][columns]
+		horizontalWalls = new int[height - 1][width]; //subtract one to account for border
+		verticalWalls = new int[height][width - 1];
+		
+		//so we set everything to one
+		for (int i = 0; i < height - 1; i++) {
+			for (int k = 0; k < width - 1; k++) {
+				horizontalWalls[i][k] = 1;
+				verticalWalls[i][k] = 1;
+			}
+		}
+		for (int i = 0; i < height - 1; i++) {
+			horizontalWalls[i][width - 1] = 1;
+		}
+		for (int k = 0; k < width - 1; k++) {
+			verticalWalls[height - 1][k] = 1;
+		}
+		
+		//test zig zag
+		verticalWalls[0][0] = 0;
+		horizontalWalls[0][1] = 0;
+		horizontalWalls[1][1] = 0;
+		verticalWalls[2][1] = 0;
 	}
 
 }
