@@ -9,6 +9,12 @@ public class Maze {
 	int width, height;
 	int imageWidth, imageHeight;
 	int wallThickness;
+	//coordinates of the enter and exit points
+	int startx, starty;
+	int finishx, finishy;
+	
+	Color startColor;
+	Color finishColor;
 		
 	int[][] horizontalWalls;
 	int[][] verticalWalls;
@@ -29,6 +35,13 @@ public class Maze {
 		this.height = height;
 		this.imageWidth = imageWidth;
 		this.imageHeight = imageHeight;
+		startx = 0;
+		starty = 0;
+		finishx = width - 1;
+		finishy = height - 1;
+		
+		startColor = new Color(0, 1, 0, 0.5);
+		finishColor = new Color(1, 0, 0, 0.5);
 		
 		image = new WritableImage(width, height);
 		
@@ -64,6 +77,18 @@ public class Maze {
 		
 		double cellWidth = (double)imageWidth / (double)width;
 		double cellHeight = (double)imageHeight / (double)height;
+		
+		for (int y = (int) (starty * cellHeight); y < starty * cellHeight + cellHeight; y++) {
+			for (int x = (int) (startx * cellWidth); x < startx * cellWidth + cellWidth; x++) {
+				writer.setColor(x, y, startColor);
+			}
+		}
+		
+		for (int y = (int) (finishy * cellHeight); y < finishy * cellHeight + cellHeight; y++) {
+			for (int x = (int) (finishx * cellWidth); x < finishx * cellWidth + cellWidth; x++) {
+				writer.setColor(x, y, finishColor);
+			}
+		}
 		
 		//draw north and south borders. divide by 2 add one to draw half of wall
 		for (int y = 0; y < wallThickness / 2 + 1; y++) {
