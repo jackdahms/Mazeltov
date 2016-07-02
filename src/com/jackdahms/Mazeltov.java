@@ -82,14 +82,10 @@ public class Mazeltov extends Application {
 		}.start();
 		
 		GridPane controlGrid = new GridPane();
-		controlGrid.setHgap(5);
-		controlGrid.setVgap(5);
-		controlGrid.setPadding(new Insets(5, 5, 5, 5));
-		controlGrid.setMinWidth(180);
+		controlGrid.setId("grid-pane");
 		pane.add(controlGrid, 1, 0);
 		
 		Label widthLabel = new Label("WIDTH");
-		widthLabel.setMinWidth(90);
 		controlGrid.add(widthLabel, 0, 0);
 		
 		Spinner<Integer> widthSpinner = new Spinner<Integer>(1, 8000, width, 10); //TODO decide on width min/max
@@ -114,8 +110,13 @@ public class Mazeltov extends Application {
 		controlGrid.add(wallThicknessSpinner, 1, 2);
 		
 		Button generateButton = new Button("GENERATE");
+		generateButton.setMinWidth(95);
 		generateButton.setOnAction(press -> setPropertiesAndDraw());
 		controlGrid.add(generateButton, 0, 3);
+		
+		Button solveButton = new Button("SOLVE");
+		solveButton.setMinWidth(90);
+		controlGrid.add(solveButton, 1, 3);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
 		controlGrid.requestFocus(); //must be done after scene is constructed
