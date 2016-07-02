@@ -9,8 +9,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -29,6 +31,17 @@ public class Mazeltov extends Application {
 	static Canvas canvas;
 	GraphicsContext g;
 	
+	/**
+	 * TODO
+	 * gui code to html
+	 * user input needs to change values
+	 * generations dropdown
+	 * solutions dropdown
+	 * generate button
+	 * solve button
+	 * potentially get rid of ability to move start and finish
+	 */
+	
 	private void repaint(long currentNanoTime) {
 		g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		g.drawImage(maze.image, 0, 0, canvas.getWidth(), canvas.getHeight());
@@ -36,15 +49,27 @@ public class Mazeltov extends Application {
 
 	public static void main(String[] args) {
 		maze = new Maze(width, height, SCENE_WIDTH - 200, SCENE_HEIGHT);
+		setPropertiesAndDraw();
+		launch(args);
+	}
+	
+	/**
+	 * Sets the properties for the maze and draws it
+	 */
+	public static void setPropertiesAndDraw() {
+		maze.setWidth(width);
+		maze.setHeight(height);
 		maze.wallThickness = wallThickness;
 		maze.mapToImage();
-		launch(args);
 	}
 	
 	public void start(Stage stage) {
 		GridPane pane = new GridPane();
 		pane.setAlignment(Pos.TOP_RIGHT);
 		canvas = new Canvas(SCENE_WIDTH - 200, SCENE_HEIGHT);
+		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> maze.pressed(e.getX(), e.getY()));
+		canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> maze.dragged(e.getX(), e.getY()));
+		canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> maze.released(e.getX(), e.getY()));
 		g = canvas.getGraphicsContext2D();
 		GridPane.setHgrow(canvas, Priority.ALWAYS);
 		GridPane.setVgrow(canvas, Priority.ALWAYS);
@@ -81,12 +106,16 @@ public class Mazeltov extends Application {
 		controlGrid.add(heightSpinner, 1, 1);
 		
 		Label wallThicknessLabel = new Label("WALL WIDTH");
-		controlGrid.add(wallThicknessLabel, 0, 2, 2, 1);
+		controlGrid.add(wallThicknessLabel, 0, 2);
 		
 		Spinner<Integer> wallThicknessSpinner = new Spinner<Integer>(1, 10, wallThickness, 1);
 		wallThicknessSpinner.setEditable(true);
 		wallThicknessSpinner.valueProperty().addListener(observable -> wallThickness = wallThicknessSpinner.getValue());
 		controlGrid.add(wallThicknessSpinner, 1, 2);
+		
+		Button generateButton = new Button("GENERATE");
+		generateButton.setOnAction(press -> setPropertiesAndDraw());
+		controlGrid.add(generateButton, 0, 3);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
 		controlGrid.requestFocus(); //must be done after scene is constructed
@@ -100,6 +129,11 @@ public class Mazeltov extends Application {
 			public void invalidated(Observable arg0) {
 				pane.getChildren().remove(canvas);
 				canvas = new Canvas(scene.getWidth() - 200, scene.getHeight());
+				
+				canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> maze.pressed(e.getX(), e.getY()));
+				canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> maze.dragged(e.getX(), e.getY()));
+				canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> maze.released(e.getX(), e.getY()));
+				
 				g = canvas.getGraphicsContext2D();
 				pane.add(canvas, 0, 0);
 				try {
@@ -110,7 +144,6 @@ public class Mazeltov extends Application {
 			}			
 		};
 		
-		//could have used lambdas here but I didn't want to retype the exact same code
 		scene.widthProperty().addListener(sizeListener);
 		scene.heightProperty().addListener(sizeListener);
 		stage.setTitle("Mazeltov");
