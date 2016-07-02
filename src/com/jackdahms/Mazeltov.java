@@ -4,7 +4,6 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,7 +11,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -24,7 +22,7 @@ public class Mazeltov extends Application {
 	
 	static int width = 40;
 	static int height = 30;
-	static int wallThickness = 6;
+	static int wallThickness = 1;
 	
 	static Maze maze;
 	
@@ -69,7 +67,7 @@ public class Mazeltov extends Application {
 		widthLabel.setMinWidth(90);
 		controlGrid.add(widthLabel, 0, 0);
 		
-		Spinner<Integer> widthSpinner = new Spinner<Integer>(1, 8000, width, 100); //TODO decide on width min/max
+		Spinner<Integer> widthSpinner = new Spinner<Integer>(1, 8000, width, 10); //TODO decide on width min/max
 		widthSpinner.setEditable(true);
 		widthSpinner.valueProperty().addListener(observable -> width = widthSpinner.getValue());
 		controlGrid.add(widthSpinner, 1, 0);
@@ -77,18 +75,17 @@ public class Mazeltov extends Application {
 		Label heightLabel = new Label("HEIGHT");
 		controlGrid.add(heightLabel, 0, 1);
 
-		Spinner<Integer> heightSpinner = new Spinner<Integer>(1, 8000, height, 100); //TODO decide on height min/max 
+		Spinner<Integer> heightSpinner = new Spinner<Integer>(1, 8000, height, 10); //TODO decide on height min/max 
 		heightSpinner.setEditable(true);
 		heightSpinner.valueProperty().addListener(observable -> height = heightSpinner.getValue());
 		controlGrid.add(heightSpinner, 1, 1);
 		
-		Label wallThicknessLabel = new Label("WALL THICKNESS");
-		controlGrid.add(wallThicknessLabel, 0, 2);
+		Label wallThicknessLabel = new Label("WALL WIDTH");
+		controlGrid.add(wallThicknessLabel, 0, 2, 2, 1);
 		
 		Spinner<Integer> wallThicknessSpinner = new Spinner<Integer>(1, 10, wallThickness, 1);
 		wallThicknessSpinner.setEditable(true);
 		wallThicknessSpinner.valueProperty().addListener(observable -> wallThickness = wallThicknessSpinner.getValue());
-		wallThicknessSpinner.setMaxWidth(70);
 		controlGrid.add(wallThicknessSpinner, 1, 2);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
