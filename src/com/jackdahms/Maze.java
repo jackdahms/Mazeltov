@@ -53,7 +53,7 @@ public class Maze {
 		
 		image = new WritableImage(width, height);
 		
-		generateMaze();
+		generateWalls();
 	}
 		
 	public void mapToImage() {
@@ -73,7 +73,8 @@ public class Maze {
 		//draw finish cell
 		for (int y = (int) (finishy * cellHeight); y < finishy * cellHeight + cellHeight; y++) {
 			for (int x = (int) (finishx * cellWidth); x < finishx * cellWidth + cellWidth; x++) {
-				writer.setColor(x, y, finishColor);
+				try {writer.setColor(x, y, finishColor); } catch (Exception e) {/*prevents occasional rounding errors*/}
+//				writer.setColor(x, y, finishColor); //problem with size 66 TODO wtf is the problem here
 			}
 		}
 		
@@ -165,6 +166,33 @@ public class Maze {
 		else if (cursory < 0) cursory = 0;
 	}
 	
+
+	public void generateWalls() {
+		//both initialized to zero
+		cells = new int[height][width]; //[rows][columns]
+		horizontalWalls = new int[height - 1][width]; //subtract one to account for border
+		verticalWalls = new int[height][width - 1];
+		
+		//so we set everything to one
+		for (int i = 0; i < height - 1; i++) {
+			for (int k = 0; k < width - 1; k++) {
+				horizontalWalls[i][k] = 1;
+				verticalWalls[i][k] = 1;
+			}
+		}
+		for (int i = 0; i < height - 1; i++) {
+			horizontalWalls[i][width - 1] = 1;
+		}
+		for (int k = 0; k < width - 1; k++) {
+			verticalWalls[height - 1][k] = 1;
+		}
+	}
+	
+	public void generateMaze(Generatable g) {
+		g.generate();
+		mapToImage();
+	}
+	
 	public void pressed(double x, double y) {
 		cursorPositionToCoords(x, y);
 		if (cursorx == startx && cursory == starty) {
@@ -200,41 +228,15 @@ public class Maze {
 		this.width = width;
 		finishx = width - 1;
 		
-		generateMaze();
+		generateWalls();
 	}
 	
 	public void setHeight(int height) {
 		this.height = height;
 		finishy = height - 1;
 		
-		generateMaze();
+		generateWalls();
 	}
 	
-	public void generateMaze() {
-		//both initialized to zero
-		cells = new int[height][width]; //[rows][columns]
-		horizontalWalls = new int[height - 1][width]; //subtract one to account for border
-		verticalWalls = new int[height][width - 1];
-		
-		//so we set everything to one
-		for (int i = 0; i < height - 1; i++) {
-			for (int k = 0; k < width - 1; k++) {
-				horizontalWalls[i][k] = 1;
-				verticalWalls[i][k] = 1;
-			}
-		}
-		for (int i = 0; i < height - 1; i++) {
-			horizontalWalls[i][width - 1] = 1;
-		}
-		for (int k = 0; k < width - 1; k++) {
-			verticalWalls[height - 1][k] = 1;
-		}
-		
-		//test zig zag
-		verticalWalls[0][0] = 0;
-		horizontalWalls[0][1] = 0;
-		horizontalWalls[1][1] = 0;
-		verticalWalls[2][1] = 0;
-	}
 
 }
