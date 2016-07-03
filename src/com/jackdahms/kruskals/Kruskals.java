@@ -6,13 +6,10 @@ import java.util.Collections;
 import com.jackdahms.Generator;
 
 public class Kruskals extends Generator {
-	
-	int width;
-	int height;
-	
+		
 	public void generate() {
+		//create a list of all walls in random order
 		ArrayList<Wall> walls = new ArrayList<Wall>();
-		//add all walls to a list
 		for (int i = 0; i < height - 1; i++) {
 			for (int k = 0; k < width - 1; k++) {
 				walls.add(new Wall(i, k, true));
@@ -28,18 +25,56 @@ public class Kruskals extends Generator {
 		Collections.shuffle(walls); //shake it up
 		
 		//create a set for each cell
+		ArrayList<Set> sets = new ArrayList<Set>();
 		Cell[][] cells = new Cell[height][width];
-		
 		for (int i = 0; i < height; i++) {
 			for (int k = 0; k < width; k++) {
-				cells[i][k] = new Cell(i, k);
+				Cell c = new Cell(i, k); //create cell
+				cells[i][k] = c; //add cell to array
+				sets.add(new Set(c)); //add set to setlist
 			}
 		}
 		
-		for (Wall wall : walls) { //for each wall in a random order
-			//if cells divided by this wall are in different sets
-			//remove current wall
-			//join sets
+		//for each wall in a random order
+		for (Wall wall : walls) {
+			if (wall.horizontal) {
+				//the cells to attempt to join
+				Cell cellA = new Cell(wall.row, wall.col);
+				Cell cellB = new Cell(wall.row + 1, wall.col);
+				Set setA = null; //the set that contains A
+				Set setB = null;
+				for (Set s : sets) {
+					if (s.contains(cellA)) {
+						setA = s;
+					}
+					if (s.contains(cellB)) {
+						setB = s;
+					}
+				}
+				if (!setA.equals(setB)) { //if cellA and cellB are in distinct sets
+					horizontalWalls[wall.row][wall.col] = 0; //remove wall
+					setA.merge(setB);
+					sets.remove(setB);
+				}
+			} else { //vertical wall
+				Cell cellA = new Cell(wall.row, wall.col);
+				Cell cellB = new Cell(wall.row, wall.col + 1);
+				Set setA = null; //the set that contains A
+				Set setB = null;
+				for (Set s : sets) {
+					if (s.contains(cellA)) {
+						setA = s;
+					}
+					if (s.contains(cellB)) {
+						setB = s;
+					}
+				}
+				if (!setA.equals(setB)) { //if cellA and cellB are in distinct sets
+					verticalWalls[wall.row][wall.col] = 0; //remove wall
+					setA.merge(setB);
+					sets.remove(setB);
+				}
+			}
 		}
 	}
 	
