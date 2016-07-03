@@ -188,8 +188,12 @@ public class Maze {
 		}
 	}
 	
-	public void generateMaze(Generatable g) {
+	public void generateMaze(Generator g) {
+		g.setAllProperties(this);
 		g.generate();
+		cells = g.cells;
+		horizontalWalls = g.horizontalWalls;
+		verticalWalls = g.verticalWalls;
 		mapToImage();
 	}
 	
