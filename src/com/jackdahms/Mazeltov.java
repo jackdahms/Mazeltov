@@ -1,23 +1,23 @@
 package com.jackdahms;
 
 import java.util.ArrayList;
-import java.util.Stack;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+
+import com.jackdahms.depthfirstsearch.DepthFirstSearch;
+import com.jackdahms.kruskals.Kruskals;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
@@ -37,11 +37,12 @@ public class Mazeltov extends Application {
 	static Canvas canvas;
 	GraphicsContext g;
 	
-	static ArrayList<Generatable> rulesets = new ArrayList<Generatable>();
+	Generator selectedGenerator;
+	ArrayList<Generator> generators = new ArrayList<Generator>();
 	
 	/**
 	 * TODO
-	 * generations dropdown
+	 * start and stop can move but dont matter programmatically
 	 * solutions dropdown
 	 * potentially get rid of ability to move start and finish
 	 * vbox instead of gridpane?
@@ -55,97 +56,18 @@ public class Mazeltov extends Application {
 
 	public static void main(String[] args) {
 		maze = new Maze(width, height, SCENE_WIDTH - CONTROL_PANEL_WIDTH, SCENE_HEIGHT);
-		setPropertiesAndDraw();
-		
-		rulesets.add(() -> {			
-			class Cell {
-				int row, col;
-				
-				Cell(int row, int col) {
-					this.row = row; 
-					this.col = col;
-				}
-				
-				void setVisited(boolean visited){
-					if (visited) {
-						maze.cells[row][col] = 1;
-					} else {
-						maze.cells[row][col] = 0;
-					}
-				}
-				
-				boolean getVisited() {
-					return maze.cells[row][col] == 1;
-				}
-								
-			}
-
-			Cell[][] cells = new Cell[maze.height][maze.width];
-						
-			for (int i = 0; i < maze.height; i++) {
-				for (int k = 0; k < maze.width; k++) {
-					cells[i][k] = new Cell(i, k);
-				}
-			}
-		
-			BiFunction<Integer, Integer, ArrayList<Cell>> getNeighbors = (row, col) -> {
-				ArrayList<Cell> neighbors = new ArrayList<Cell>();
-				try {neighbors.add(cells[row - 1][col]);} catch (Exception e) {/*neighbor out of bounds*/}
-				try {neighbors.add(cells[row + 1][col]);} catch (Exception e) {/*neighbor out of bounds*/}
-				try {neighbors.add(cells[row][col - 1]);} catch (Exception e) {/*neighbor out of bounds*/}
-				try {neighbors.add(cells[row][col + 1]);} catch (Exception e) {/*neighbor out of bounds*/}
-				return neighbors;
-			};
-			
-			Cell current = cells[maze.starty][maze.startx];
-			current.setVisited(true);
-			
-			//TODO backtrack with cells, not stack
-			Stack<Cell> stack = new Stack<Cell>();
-			
-			do {
-				ArrayList<Cell> unvisitedNeighbors = new ArrayList<Cell>();
-				for (Cell c : getNeighbors.apply(current.row, current.col)){
-					if (!c.getVisited()) {
-						unvisitedNeighbors.add(c);
-					}
-				}
-				
-				if (unvisitedNeighbors.size() == 0) { //if all neighbors visited
-					current = stack.pop();
-				} else { //if any unvisited neighbors
-					Cell chosen = unvisitedNeighbors.get((int) (Math.random() * unvisitedNeighbors.size()));
-					
-					if (chosen.col > current.col) { //neighbor on the right
-						maze.verticalWalls[current.row][current.col] = 0;
-					} else if (chosen.col < current.col) { //neighbor on the left
-						maze.verticalWalls[chosen.row][chosen.col] = 0; 
-					} else if (chosen.row < current.row) { //neighbor on top
-						maze.horizontalWalls[chosen.row][chosen.col] = 0;
-					} else if (chosen.row > current.row) { //neighbor on bottom
-						maze.horizontalWalls[current.row][current.col] = 0;
-					}
-					
-					stack.push(current);
-					current = chosen;
-					current.setVisited(true);
-				}
-				
-			} while (!stack.empty());
-			
-		});
-		
+		setMazeProperties();
+		maze.mapToImage();
 		launch(args);
 	}
 	
 	/**
-	 * Sets the properties for the maze and draws it
+	 * Sets the properties for the maze
 	 */
-	public static void setPropertiesAndDraw() {
+	public static void setMazeProperties() {
 		maze.setWidth(width);
 		maze.setHeight(height);
 		maze.wallThickness = wallThickness;
-		maze.mapToImage();
 	}
 	
 	public void start(Stage stage) {
@@ -168,12 +90,15 @@ public class Mazeltov extends Application {
 		
 		GridPane controlGrid = new GridPane();
 		controlGrid.setId("control-panel");
+		int labelColumnWidth = 100;
+		controlGrid.getColumnConstraints().add(new ColumnConstraints(labelColumnWidth));
+		controlGrid.getColumnConstraints().add(new ColumnConstraints(CONTROL_PANEL_WIDTH - labelColumnWidth - 15)); //15 = 5 padding + 5 vgap + 5 padding
 		pane.add(controlGrid, 1, 0);
 				
 		Label widthLabel = new Label("WIDTH");
 		controlGrid.add(widthLabel, 0, 0);
 		
-		Spinner<Integer> widthSpinner = new Spinner<Integer>(1, 8000, width, 10); //TODO decide on width min/max
+		Spinner<Integer> widthSpinner = new Spinner<Integer>(1, 1000, width, 10);
 		widthSpinner.setEditable(true);
 		widthSpinner.valueProperty().addListener(observable -> width = widthSpinner.getValue());
 		controlGrid.add(widthSpinner, 1, 0);
@@ -181,12 +106,12 @@ public class Mazeltov extends Application {
 		Label heightLabel = new Label("HEIGHT");
 		controlGrid.add(heightLabel, 0, 1);
 
-		Spinner<Integer> heightSpinner = new Spinner<Integer>(1, 8000, height, 10); //TODO decide on height min/max 
+		Spinner<Integer> heightSpinner = new Spinner<Integer>(1, 750, height, 10);
 		heightSpinner.setEditable(true);
 		heightSpinner.valueProperty().addListener(observable -> height = heightSpinner.getValue());
 		controlGrid.add(heightSpinner, 1, 1);
 		
-		Label wallThicknessLabel = new Label("WALL WIDTH");
+		Label wallThicknessLabel = new Label("WALL THICKNESS");
 		controlGrid.add(wallThicknessLabel, 0, 2);
 		
 		Spinner<Integer> wallThicknessSpinner = new Spinner<Integer>(1, 10, wallThickness, 1);
@@ -196,22 +121,31 @@ public class Mazeltov extends Application {
 		
 		Label generatorLabel = new Label("GENERATOR");
 		controlGrid.add(generatorLabel, 0, 3);
-		
 
+		generators.add(new DepthFirstSearch());
+		generators.add(new Kruskals());
+		
+		ChoiceBox<Generator> generatorBox = new ChoiceBox<Generator>();
+		generatorBox.getItems().addAll(generators);
+		generatorBox.setValue(generators.get(0));
+		generatorBox.getSelectionModel().selectedItemProperty().addListener(observable -> selectedGenerator = generatorBox.getSelectionModel().getSelectedItem());
+		generatorBox.setMinWidth(CONTROL_PANEL_WIDTH - 10); //10 = 5px padding * 2
+		controlGrid.add(generatorBox, 0, 4, 2, 1);
+		
 		Button generateButton = new Button("GENERATE");
 		generateButton.setMinWidth(190);
 		generateButton.setOnAction(press -> {
-			setPropertiesAndDraw();
-			maze.generateMaze(rulesets.get(0));
+			setMazeProperties();
+			maze.generateMaze(selectedGenerator);
 		});
-		controlGrid.add(generateButton, 0, 4, 2, 1);
+		controlGrid.add(generateButton, 0, 5, 2, 1);
 		
 		Label solverLabel = new Label("SOLVER");
-		controlGrid.add(solverLabel, 0, 5);
+		controlGrid.add(solverLabel, 0, 6);
 				
 		Button solveButton = new Button("SOLVE");
 		solveButton.setMinWidth(190);
-		controlGrid.add(solveButton, 0, 6, 2, 1);
+		controlGrid.add(solveButton, 0, 8, 2, 1);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
 		controlGrid.requestFocus(); //must be done after scene is constructed
