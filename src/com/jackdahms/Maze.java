@@ -105,7 +105,7 @@ public class Maze {
 					//x position to start drawing wall at
 					int x = (int)(k * cellWidth);
 					int x1 = x - wallThickness / 2;
-					int x2 = x+(int) (cellWidth + wallThickness / 2); 
+					int x2 = x + (int) (cellWidth + wallThickness / 2); 
 					//w for width! add one to the loop so it draws the same thickness as inputed
 					for (int w = y1; w < y2 + 1; w++) {
 						//l for length!
@@ -132,7 +132,7 @@ public class Maze {
 					int x2 = (int)((column + 1) * cellWidth + wallThickness / 2); //right of the wall
 					//w for width! add one to the loop so it draws the same thickness as inputed
 					for (int w = x1; w < x2 + 1; w++) {
-						for (int length = 0; length < cellHeight; length++) {
+						for (int length = -wallThickness / 2; length < cellHeight + wallThickness / 2; length++) {
 							try {
 								writer.setColor(w, y + length, Color.BLACK);
 							} catch (Exception e) {/*in case wall spills over border*/}
