@@ -124,10 +124,11 @@ public class Mazeltov extends Application {
 
 		generators.add(new DepthFirstSearch());
 		generators.add(new Kruskals());
+		selectedGenerator = generators.get(0);
 		
 		ChoiceBox<Generator> generatorBox = new ChoiceBox<Generator>();
 		generatorBox.getItems().addAll(generators);
-		generatorBox.setValue(generators.get(0));
+		generatorBox.setValue(selectedGenerator);
 		generatorBox.getSelectionModel().selectedItemProperty().addListener(observable -> selectedGenerator = generatorBox.getSelectionModel().getSelectedItem());
 		generatorBox.setMinWidth(CONTROL_PANEL_WIDTH - 10); //10 = 5px padding * 2
 		controlGrid.add(generatorBox, 0, 4, 2, 1);
