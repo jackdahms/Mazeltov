@@ -43,10 +43,9 @@ public class Mazeltov extends Application {
 	
 	/**
 	 * TODO
-	 * start and stop can move but dont matter programmatically
+	 * kruskals freezes on large sizes
+	 * start and stop can move but dont matter programmatically, potentially get rid of ability to move start and finish
 	 * solutions dropdown
-	 * potentially get rid of ability to move start and finish
-	 * vbox instead of gridpane?
 	 * spinners not friendly with user-typed input
 	 */
 	
