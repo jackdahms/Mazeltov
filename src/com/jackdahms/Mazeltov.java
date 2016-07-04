@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.jackdahms.depthfirstsearch.DepthFirstSearch;
 import com.jackdahms.kruskals.Kruskals;
+import com.jackdahms.prims.Prims;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -124,6 +125,7 @@ public class Mazeltov extends Application {
 
 		generators.add(new DepthFirstSearch());
 		generators.add(new Kruskals());
+		generators.add(new Prims());
 		selectedGenerator = generators.get(0);
 		
 		ChoiceBox<Generator> generatorBox = new ChoiceBox<Generator>();
