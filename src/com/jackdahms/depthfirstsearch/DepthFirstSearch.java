@@ -16,7 +16,7 @@ public class DepthFirstSearch extends Generator {
 			}
 		}
 				
-		Cell current = cells[0][0];
+		Cell current = cells[starty][startx];
 		current.setVisited(true);
 		
 		Stack<Cell> stack = new Stack<Cell>();
