@@ -1,4 +1,4 @@
-package com.jackdahms.kruskals;
+package com.jackdahms.generators.kruskals;
 
 public class Wall {
 	

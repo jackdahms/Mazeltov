@@ -1,17 +1,20 @@
 package com.jackdahms;
 
+import com.jackdahms.generators.Generator; 
+
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 public class Maze {
 	
-	int width, height;
+	public int width;
+	public int height;
 	int imageWidth, imageHeight;
 	int wallThickness;
 	//coordinates of the start, finish, and cursor
-	int startx, starty;
-	int finishx, finishy;
+	public int startx, starty;
+	public int finishx, finishy;
 	int cursorx, cursory;
 	
 	//whether the start or finish are pressed to be moved
@@ -21,9 +24,9 @@ public class Maze {
 	Color startColor;
 	Color finishColor;
 		
-	int[][] horizontalWalls;
-	int[][] verticalWalls;
-	int[][] cells;
+	public int[][] horizontalWalls;
+	public int[][] verticalWalls;
+	public int[][] cells;
 	
 	double cellWidth, cellHeight;
 	
@@ -74,7 +77,6 @@ public class Maze {
 		for (int y = (int) (finishy * cellHeight); y < finishy * cellHeight + cellHeight; y++) {
 			for (int x = (int) (finishx * cellWidth); x < finishx * cellWidth + cellWidth; x++) {
 				try {writer.setColor(x, y, finishColor); } catch (Exception e) {/*prevents occasional rounding errors*/}
-//				writer.setColor(x, y, finishColor); //problem with size 66 TODO wtf is the problem here
 			}
 		}
 		
@@ -230,15 +232,15 @@ public class Maze {
 	
 	public void setWidth(int width) {
 		this.width = width;
+		startx = 0;
 		finishx = width - 1;
-		
 		generateWalls();
 	}
 	
 	public void setHeight(int height) {
 		this.height = height;
+		starty = 0;
 		finishy = height - 1;
-		
 		generateWalls();
 	}
 	

@@ -1,5 +1,7 @@
 package com.jackdahms;
 
+import com.jackdahms.generators.Generator;
+
 public class Cell {
 
 	public int row, col;

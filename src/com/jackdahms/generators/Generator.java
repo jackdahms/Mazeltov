@@ -1,4 +1,6 @@
-package com.jackdahms;
+package com.jackdahms.generators;
+
+import com.jackdahms.Maze;
 
 public abstract class Generator {
 	

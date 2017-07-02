@@ -1,10 +1,10 @@
-package com.jackdahms.depthfirstsearch;
+package com.jackdahms.generators.depthfirstsearch;
 
 import java.util.ArrayList;
 import java.util.Stack;
 
 import com.jackdahms.Cell;
-import com.jackdahms.Generator;
+import com.jackdahms.generators.Generator;
 
 public class DepthFirstSearch extends Generator {
 			

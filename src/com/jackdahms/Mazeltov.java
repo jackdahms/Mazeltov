@@ -1,10 +1,15 @@
 package com.jackdahms;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import com.jackdahms.depthfirstsearch.DepthFirstSearch;
-import com.jackdahms.kruskals.Kruskals;
-import com.jackdahms.prims.Prims;
+import com.jackdahms.generators.depthfirstsearch.DepthFirstSearch;
+import com.jackdahms.generators.kruskals.Kruskals;
+import com.jackdahms.generators.prims.Prims;
+import com.jackdahms.generators.Generator;
+
+import com.jackdahms.solvers.Solver;
+import com.jackdahms.solvers.righthandrule.RightHandRule;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -39,14 +44,19 @@ public class Mazeltov extends Application {
 	GraphicsContext g;
 	
 	Generator selectedGenerator;
-	ArrayList<Generator> generators = new ArrayList<Generator>();
+	List<Generator> generators = new ArrayList<Generator>();
+	Solver selectedSolver;
+	List<Solver> solvers = new ArrayList<Solver>();
 	
 	/**
 	 * TODO
-	 * kruskals freezes on large sizes
+	 * check box for build your own
+	 * click, drag, and zoom
 	 * start and stop can move but dont matter programmatically, potentially get rid of ability to move start and finish
 	 * solutions dropdown
 	 * spinners not friendly with user-typed input
+	 * 		update dimension on update
+	 * 		update dimension on dis-select?
 	 */
 	
 	private void repaint(long currentNanoTime) {
@@ -111,7 +121,7 @@ public class Mazeltov extends Application {
 		heightSpinner.valueProperty().addListener(observable -> height = heightSpinner.getValue());
 		controlGrid.add(heightSpinner, 1, 1);
 		
-		Label wallThicknessLabel = new Label("WALL THICKNESS");
+		Label wallThicknessLabel = new Label("WALL WIDTH");
 		controlGrid.add(wallThicknessLabel, 0, 2);
 		
 		Spinner<Integer> wallThicknessSpinner = new Spinner<Integer>(1, 10, wallThickness, 1);
@@ -144,7 +154,17 @@ public class Mazeltov extends Application {
 		
 		Label solverLabel = new Label("SOLVER");
 		controlGrid.add(solverLabel, 0, 6);
-				
+		
+		solvers.add(new RightHandRule());
+		selectedSolver = solvers.get(0);
+		
+		ChoiceBox<Solver> solverBox = new ChoiceBox<Solver>();
+		solverBox.getItems().addAll(solvers);
+		solverBox.setValue(selectedSolver);
+		solverBox.getSelectionModel().selectedItemProperty().addListener(observable -> selectedSolver = solverBox.getSelectionModel().getSelectedItem());
+		solverBox.setMinWidth(CONTROL_PANEL_WIDTH - 10); //10 = 5px padding * 2
+		controlGrid.add(solverBox, 0, 7, 2, 1);
+		
 		Button solveButton = new Button("SOLVE");
 		solveButton.setMinWidth(190);
 		controlGrid.add(solveButton, 0, 8, 2, 1);
@@ -154,7 +174,7 @@ public class Mazeltov extends Application {
 		try {
 			scene.getStylesheets().add(Mazeltov.class.getResource("/com/jackdahms/mazeltov.css").toExternalForm());
 		} catch (Exception e) {
-			System.err.println("Could not load stylesheet...");
+			System.err.println("Could not load stylesheet!");
 		}
 		
 		InvalidationListener sizeListener = observable -> {

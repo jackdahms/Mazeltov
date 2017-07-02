@@ -1,4 +1,4 @@
-package com.jackdahms.prims;
+package com.jackdahms.generators.prims;
 
 public class Wall {
 	
