@@ -3,6 +3,7 @@ package com.jackdahms.depthfirstsearch;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import com.jackdahms.Cell;
 import com.jackdahms.Generator;
 
 public class DepthFirstSearch extends Generator {

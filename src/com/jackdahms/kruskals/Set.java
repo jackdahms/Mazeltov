@@ -1,5 +1,7 @@
 package com.jackdahms.kruskals;
 
+import com.jackdahms.Cell;
+
 public class Set {
 
 	Cell[] cells;

@@ -1,10 +1,9 @@
 package com.jackdahms.prims;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.function.Consumer;
 
+import com.jackdahms.Cell;
 import com.jackdahms.Generator;
 
 public class Prims extends Generator {

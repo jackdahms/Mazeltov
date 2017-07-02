@@ -3,6 +3,7 @@ package com.jackdahms.kruskals;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import com.jackdahms.Cell;
 import com.jackdahms.Generator;
 
 public class Kruskals extends Generator {
@@ -29,7 +30,7 @@ public class Kruskals extends Generator {
 		Cell[][] cells = new Cell[height][width];
 		for (int i = 0; i < height; i++) {
 			for (int k = 0; k < width; k++) {
-				Cell c = new Cell(i, k); //create cell
+				Cell c = new Cell(i, k, this); //create cell
 				cells[i][k] = c; //add cell to array
 				sets.add(new Set(c)); //add set to setlist
 			}
@@ -39,8 +40,8 @@ public class Kruskals extends Generator {
 		for (Wall wall : walls) {
 			if (wall.horizontal) {
 				//the cells to attempt to join
-				Cell cellA = new Cell(wall.row, wall.col);
-				Cell cellB = new Cell(wall.row + 1, wall.col);
+				Cell cellA = new Cell(wall.row, wall.col, this);
+				Cell cellB = new Cell(wall.row + 1, wall.col, this);
 				Set setA = null; //the set that contains A
 				Set setB = null;
 				for (Set s : sets) {
@@ -57,8 +58,8 @@ public class Kruskals extends Generator {
 					sets.remove(setB);
 				}
 			} else { //vertical wall
-				Cell cellA = new Cell(wall.row, wall.col);
-				Cell cellB = new Cell(wall.row, wall.col + 1);
+				Cell cellA = new Cell(wall.row, wall.col, this);
+				Cell cellB = new Cell(wall.row, wall.col + 1, this);
 				Set setA = null; //the set that contains A
 				Set setB = null;
 				for (Set s : sets) {
