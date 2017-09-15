@@ -1,6 +1,4 @@
-package com.jackdahms;
-
-import com.jackdahms.generators.Generator;
+package com.jackdahms.generators;
 
 public class Cell {
 

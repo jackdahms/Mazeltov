@@ -3,7 +3,7 @@ package com.jackdahms.generators.kruskals;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.jackdahms.Cell;
+import com.jackdahms.generators.Cell;
 import com.jackdahms.generators.Generator;
 
 public class Kruskals extends Generator {

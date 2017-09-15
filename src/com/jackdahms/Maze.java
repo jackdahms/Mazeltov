@@ -1,6 +1,11 @@
 package com.jackdahms;
 
-import com.jackdahms.generators.Generator; 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import com.jackdahms.generators.Generator;
+import com.jackdahms.solvers.Solver;
 
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -22,11 +27,18 @@ public class Maze {
 	boolean finishPressed;
 	
 	Color startColor;
+	Color pathColor;
 	Color finishColor;
 		
 	public int[][] horizontalWalls;
 	public int[][] verticalWalls;
 	public int[][] cells;
+	
+	public List<Integer> visitedX = new ArrayList<Integer>();
+	public List<Integer> visitedY = new ArrayList<Integer>();
+	
+	public List<Integer> pathX = new ArrayList<Integer>();
+	public List<Integer> pathY = new ArrayList<Integer>();
 	
 	double cellWidth, cellHeight;
 	
@@ -52,6 +64,7 @@ public class Maze {
 		finishy = height - 1;
 		
 		startColor = new Color(0, 1, 0, 0.5);
+		pathColor = new Color(1, 1, 0, 0.5);
 		finishColor = new Color(1, 0, 0, 0.5);
 		
 		image = new WritableImage(width, height);
@@ -65,6 +78,18 @@ public class Maze {
 		
 		cellWidth = (double)imageWidth / (double)width;
 		cellHeight = (double)imageHeight / (double)height;
+		
+		//draw solution cells
+		Iterator<Integer> pathXIterator;
+		for (int i = 0; 0 < pathX.size(); i++) {
+			int cellx = pathX.remove(0);
+			int celly = pathY.remove(0);
+			for (int y = (int) (celly * cellHeight); y < celly * cellHeight + cellHeight; y++) {
+				for (int x = (int) (cellx * cellWidth); x < cellx * cellWidth + cellWidth; x++) {
+					writer.setColor(x, y, pathColor);
+				}
+			}
+		}
 		
 		//draw start cell
 		for (int y = (int) (starty * cellHeight); y < starty * cellHeight + cellHeight; y++) {
@@ -172,30 +197,38 @@ public class Maze {
 	public void generateWalls() {
 		//both initialized to zero
 		cells = new int[height][width]; //[rows][columns]
-		horizontalWalls = new int[height - 1][width]; //subtract one to account for border
+		horizontalWalls = new int[height - 1][width]; //add one to exclude for border
 		verticalWalls = new int[height][width - 1];
 		
-		//so we set everything to one
-		for (int i = 0; i < height - 1; i++) {
-			for (int k = 0; k < width - 1; k++) {
+		//set everything to one to draw all walls
+		for (int i = 0; i < horizontalWalls.length; i++) {
+			for (int k = 0; k < horizontalWalls[i].length; k++) {
 				horizontalWalls[i][k] = 1;
-				verticalWalls[i][k] = 1;
 			}
 		}
-		for (int i = 0; i < height - 1; i++) {
-			horizontalWalls[i][width - 1] = 1;
-		}
-		for (int k = 0; k < width - 1; k++) {
-			verticalWalls[height - 1][k] = 1;
+		for (int i = 0; i < verticalWalls.length; i++) {
+			for (int k = 0; k < verticalWalls[i].length; k++) {
+				verticalWalls[i][k] = 1;
+			}
 		}
 	}
 	
 	public void generateMaze(Generator g) {
-		g.setAllProperties(this);
+		g.updateProperties(this);
 		g.generate();
-		cells = g.cells;
 		horizontalWalls = g.horizontalWalls;
 		verticalWalls = g.verticalWalls;
+		mapToImage();
+	}
+	
+	public void solveMaze(Solver s) {
+		s.updateProperties(this);
+		s.solve();
+		cells = s.cells;
+		visitedX = s.visitedX;
+		visitedY = s.visitedY;
+		pathX = s.pathX;
+		pathY = s.pathY;
 		mapToImage();
 	}
 	

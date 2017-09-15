@@ -50,13 +50,12 @@ public class Mazeltov extends Application {
 	
 	/**
 	 * TODO
-	 * check box for build your own
+	 * check box for build your own?
 	 * click, drag, and zoom
-	 * start and stop can move but dont matter programmatically, potentially get rid of ability to move start and finish
-	 * solutions dropdown
 	 * spinners not friendly with user-typed input
 	 * 		update dimension on update
 	 * 		update dimension on dis-select?
+	 * change generation and solution speeds? change delay
 	 */
 	
 	private void repaint(long currentNanoTime) {
@@ -167,6 +166,9 @@ public class Mazeltov extends Application {
 		
 		Button solveButton = new Button("SOLVE");
 		solveButton.setMinWidth(190);
+		solveButton.setOnAction(press -> {
+			maze.solveMaze(selectedSolver);
+		});
 		controlGrid.add(solveButton, 0, 8, 2, 1);
 		
 		Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);

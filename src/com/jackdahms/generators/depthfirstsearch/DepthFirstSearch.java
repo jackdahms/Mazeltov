@@ -3,11 +3,11 @@ package com.jackdahms.generators.depthfirstsearch;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import com.jackdahms.Cell;
+import com.jackdahms.generators.Cell;
 import com.jackdahms.generators.Generator;
 
 public class DepthFirstSearch extends Generator {
-			
+		
 	public void generate() {
 		Cell[][] cells = new Cell[height][width];
 		

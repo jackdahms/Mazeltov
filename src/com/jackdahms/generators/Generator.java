@@ -14,7 +14,8 @@ public abstract class Generator {
 	public int startx;
 	public int starty;
 	
-	public void setAllProperties(Maze maze) {
+	//can not be a constructor, because maze can change after generator is constructed
+	public void updateProperties(Maze maze) {
 		this.cells = maze.cells;
 		this.horizontalWalls = maze.horizontalWalls;
 		this.verticalWalls = maze.verticalWalls;

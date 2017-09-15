@@ -1,6 +1,6 @@
 package com.jackdahms.generators.kruskals;
 
-import com.jackdahms.Cell;
+import com.jackdahms.generators.Cell;
 
 public class Set {
 

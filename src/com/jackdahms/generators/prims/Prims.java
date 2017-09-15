@@ -3,7 +3,7 @@ package com.jackdahms.generators.prims;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import com.jackdahms.Cell;
+import com.jackdahms.generators.Cell;
 import com.jackdahms.generators.Generator;
 
 public class Prims extends Generator {
